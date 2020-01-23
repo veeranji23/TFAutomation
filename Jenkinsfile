@@ -1,91 +1,55 @@
 // Jenkinsfile
 String credentialsId = 'awsCredentials'
 
-try {
-  stage('checkout') {
-    node {
-      cleanWs()
-      checkout scm
-    }
-  }
-
-  // Run terraform init
-  stage('init') {
-    node {
-      withCredentials([[
-        $class: 'AmazonWebServicesCredentialsBinding',
-        credentialsId: credentialsId,
-        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-      ]]) {
-        ansiColor('xterm') {
-          sh 'terraform init'
+pipeline {
+    agent {
+        node {
+            label 'master'
         }
-      }
     }
-  }
-
-  // Run terraform plan
-  stage('plan') {
-    node {
-      withCredentials([[
-        $class: 'AmazonWebServicesCredentialsBinding',
-        credentialsId: credentialsId,
-        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-      ]]) {
-        ansiColor('xterm') {
-          sh 'terraform plan'
+    environment {
+        terraform_version = '0.11.11'
+        access_key = 'input_your_access_key'
+        secret_key = 'input_your_secret_key'
+    }
+   
+    stages {
+        stage('checkout repo') {
+            steps {
+                git branch: "master",
+                //url: 'https://github.com/aleti-pavan/terraform-ec2.git'
+                url: 'https://github.com/veeranji23/TFAutomation.git'
+            }
         }
-      }
-    }
-  }
-
-  if (env.BRANCH_NAME == 'master') {
-
-    // Run terraform apply
-    stage('apply') {
-      node {
-        withCredentials([[
-          $class: 'AmazonWebServicesCredentialsBinding',
-          credentialsId: credentialsId,
-          accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-          secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-        ]]) {
-          ansiColor('xterm') {
-            sh 'terraform apply -auto-approve'
-          }
+        
+        stage('terraform init') {
+            steps {
+                sh  """
+                    pwd;ls;
+                    terraform init ./5.with_outputs/
+                    """
+            }
         }
-      }
-    }
-
-    // Run terraform show
-    stage('show') {
-      node {
-        withCredentials([[
-          $class: 'AmazonWebServicesCredentialsBinding',
-          credentialsId: credentialsId,
-          accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-          secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-        ]]) {
-          ansiColor('xterm') {
-            sh 'terraform show'
-          }
+        stage('terraform plan') {
+            steps {
+                sh  """
+                    terraform plan -var 'access_key=$access_key' -var 'secret_key=$secret_key' ./5.with_outputs/
+                    ls -l ./5.with_outputs/
+                    """
+                 script {
+                    timeout(time: 10, unit: 'MINUTES') {
+                       input(id: "Deploy Gate", message: "Deploy ${params.project_name}?", ok: 'Deploy')
+                    }
+                }
+            }
         }
-      }
+        stage('terraform apply') {
+            steps {
+                sh  """
+                    terraform apply -var 'access_key=$access_key' -var 'secret_key=$secret_key' -auto-approve ./5.with_outputs/
+                    """
+            }
+        }
+        
     }
-  }
-  currentBuild.result = 'SUCCESS'
-}
-catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException flowError) {
-  currentBuild.result = 'ABORTED'
-}
-catch (err) {
-  currentBuild.result = 'FAILURE'
-  throw err
-}
-finally {
-  if (currentBuild.result == 'SUCCESS') {
-    currentBuild.result = 'SUCCESS'
-  }
 }
