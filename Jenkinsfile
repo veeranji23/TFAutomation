@@ -4,7 +4,7 @@ String credentialsId = 'awsCredentials'
 try {
   stage('checkout') {
     node {
-      //cleanWs()
+      cleanWs()
       checkout scm
     }
   }
@@ -35,7 +35,7 @@ try {
         secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
       ]]) {
         ansiColor('xterm') {
-          sh 'terraform plan'
+          sh '/var/lib/jenkins/workspace/TFAutomation_master/terraform plan'
         }
       }
     }
@@ -53,7 +53,7 @@ try {
           secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
         ]]) {
           ansiColor('xterm') {
-            sh 'terraform apply -auto-approve'
+            sh '/var/lib/jenkins/workspace/TFAutomation_master/terraform apply -auto-approve'
           }
         }
       }
@@ -69,7 +69,7 @@ try {
           secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
         ]]) {
           ansiColor('xterm') {
-            sh 'terraform show'
+            sh '/var/lib/jenkins/workspace/TFAutomation_master/terraform show'
           }
         }
       }
