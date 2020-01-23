@@ -1,14 +1,6 @@
 // Jenkinsfile
 String credentialsId = 'awsCredentials'
 
-try {
-  stage('checkout') {
-    node {
-      cleanWs()
-      checkout scm
-    }
-  }
-
   // Run terraform init
   stage('init') {
     node {
