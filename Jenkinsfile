@@ -26,22 +26,22 @@ try {
   }
 
   // Run terraform plan
-  stage('plan') {
-    node {
-      withCredentials([[
-        $class: 'AmazonWebServicesCredentialsBinding',
-        credentialsId: credentialsId,
-        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-      ]]) {
-        ansiColor('xterm') {
-          sh '/var/lib/jenkins/workspace/TFAutomation_master/terraform plan'
-        }
-      }
-    }
-  }
+  //stage('plan') {
+    //node {
+      //withCredentials([[
+        //$class: 'AmazonWebServicesCredentialsBinding',
+        //credentialsId: credentialsId,
+        //accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+        //secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
+      //]]) {
+        //ansiColor('xterm') {
+          //sh '/var/lib/jenkins/workspace/TFAutomation_master/terraform plan'
+        //}
+      //}
+    //}
+  //}
 
-  if (env.BRANCH_NAME == 'master') {
+  //if (env.BRANCH_NAME == 'master') {
 
     // Run terraform apply
     stage('apply') {
