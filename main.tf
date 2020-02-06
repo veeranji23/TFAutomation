@@ -22,7 +22,7 @@ resource "aws_instance" "default" {
   instance_type          = var.instance_type
 
   tags = {
-    Name = "TFA-Jenkins-Automation-Test"
+    Name = "TFA-Demo"
   }
 }
 
